@@ -23,6 +23,11 @@ import org.json.simple.JSONObject;
 @RestController
 public class EuropaController {
 
+	 @GetMapping("/")
+	    public String index() {
+	        return "Hola mundo.";
+	    }
+	 
 	@GetMapping("/pruebas")
 	public List<JSONObject> query() {
 		List<JSONObject> list = new ArrayList<>();
