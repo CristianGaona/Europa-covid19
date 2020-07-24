@@ -23,11 +23,11 @@ import org.json.simple.JSONObject;
 @RestController
 public class EuropaController {
 
-	 @GetMapping("/")
-	    public String index() {
-	        return "Hola mundo.";
-	    }
-	 
+	@GetMapping("/")
+	public String index() {
+		return "Hola mundo.";
+	}
+
 	@GetMapping("/pruebas")
 	public List<JSONObject> query() {
 		List<JSONObject> list = new ArrayList<>();
@@ -141,10 +141,10 @@ public class EuropaController {
 				+ "prefix data:<http://utpl.edu.ec/sbc/dataCOVID/>"
 				+ "prefix rdf:<http://www.w3.org/1999/02/22-rdf-syntax-ns#>"
 				+ "prefix dbr:<http://dbpedia.org/resource/>" + "PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>"
-				+ "select  ?name ?date ?CasesByDay from <http://54.198.64.112:8890/europav1> where { " + "?URI rdf:type newOnto:Confirmed_Cases ;"
-				+ "     newOnto:totalQuantity ?CasesByDay;" + "     gn:locatedIn ?country;"
-				+ "     schema:observationDate ?date." + "    ?country dbo:name ?name .          "
-				+ "}ORDER BY DESC (xsd:integer(?CasesByDay))" + "";
+				+ "select  ?name ?date ?CasesByDay from <http://54.198.64.112:8890/europav1> where { "
+				+ "?URI rdf:type newOnto:Confirmed_Cases ;" + "     newOnto:totalQuantity ?CasesByDay;"
+				+ "     gn:locatedIn ?country;" + "     schema:observationDate ?date."
+				+ "    ?country dbo:name ?name .          " + "}ORDER BY DESC (xsd:integer(?CasesByDay))" + "";
 
 		Query query = QueryFactory.create(queryString);
 		VirtuosoQueryExecution vqe = VirtuosoQueryExecutionFactory.create(query, set);
@@ -169,6 +169,62 @@ public class EuropaController {
 				 * soln.get("date").toString()); RDFNode Test = soln.get("TestByDay");
 				 * json.put("Prueba", soln.get("TestByDay").toString());
 				 */
+				list.add(json);
+				// message = array.toString();
+			}
+			System.out.println(x);
+			return list;
+		} finally {
+			vqe.close();
+		}
+		// return null;
+	}
+
+
+
+	@GetMapping("/ubicacion")
+	public List<JSONObject> ubicacionPaises() {
+		List<JSONObject> list = new ArrayList<>();
+		String urlDB = "jdbc:virtuoso://54.198.64.112:1111";
+		VirtGraph set = new VirtGraph(urlDB, "dba", "mysecret");
+		String queryString = "PREFIX dbo: <http://dbpedia.org/ontology/>" + "PREFIX schema: <http://schema.org/>"
+				+ "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>"
+				+ "PREFIX gn: <http://www.geonames.org/ontology#>"
+				+ "prefix newOnto:<http://utpl.edu.ec/sbc/data/Ontology/>"
+				+ "prefix data:<http://utpl.edu.ec/sbc/dataCOVID/>"
+				+ "prefix rdf:<http://www.w3.org/1999/02/22-rdf-syntax-ns#>"
+				+ "prefix dbr:<http://dbpedia.org/resource/>" + "PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>"
+				+ "PREFIX : <http://dbpedia.org/ontology/>" + ""
+				+ "select  ?name ?date ?cases ?latitude ?longitude from <http://54.198.64.112:8890/europav1> where { " + "?URI rdf:type newOnto:Confirmed_Cases ;"
+				+ "     newOnto:totalQuantity ?cases;" + "     gn:locatedIn ?country;" + "     "
+				+ "     schema:observationDate ?date." + "    ?country dbo:name ?name ;"
+				+ "             schema:latitude ?latitude;" + "     schema:longitude ?longitude ."
+				+ "    FILTER(?date >= \"15/06/2020\"^^xsd:string &&" + "         ?date <= \"15/06/2020\"^^xsd:string)"
+				+ "}ORDER BY DESC (xsd:integer(?cases))" + "";
+
+		Query query = QueryFactory.create(queryString);
+		VirtuosoQueryExecution vqe = VirtuosoQueryExecutionFactory.create(query, set);
+
+		String message = "";
+		JsonArray array = new JsonArray();
+		int x = 0;
+		try {
+			ResultSet results = vqe.execSelect();
+			while (results.hasNext()) {
+				x++;
+				JSONObject json = new JSONObject();
+				QuerySolution soln = results.nextSolution();
+				RDFNode nombre = soln.get("name");
+				json.put("pais", soln.get("name").toString());
+				RDFNode date = soln.get("date");
+				json.put("fecha", soln.get("date").toString());
+				RDFNode casos = soln.get("cases");
+				json.put("casos", soln.get("cases").toString());
+				RDFNode laitude = soln.get("latitude");
+				json.put("latitud", soln.get("latitude").toString());
+				RDFNode longitud = soln.get("longitude");
+				json.put("longitud", soln.get("longitude").toString());
+	
 				list.add(json);
 				// message = array.toString();
 			}
